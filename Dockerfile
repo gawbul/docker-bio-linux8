@@ -14,17 +14,19 @@ ENV HOME /root
 # change to $HOME directory
 WORKDIR $HOME
 
-# add pin priority to some graphical packages to stop them installing and borking the build
-RUN echo "Package: x11*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: xserver-xorg*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: mate*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: unity*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: *gnome*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+# add negative pin priority to some graphical packages to stop them installing and borking the build
+RUN echo "Package: edubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: gnome*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
 RUN echo "Package: gconf*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: ubuntu-desktop*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: x2go*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: bio-linux-themes-v8\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
-RUN echo "Package: bio-linux-tetra\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: kubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: lubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: mate*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: qtubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: ubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: unity*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: x11*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: xubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
+RUN echo "Package: xserver*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
 
 # change APT sources.list to pull from GB servers
 # and uncomment some entries
@@ -36,7 +38,7 @@ RUN cat $HOME/bio-linux-sources.txt >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 16126D3A3E5C1192
 
 # update the system and install some required packages
-RUN apt-get update && apt-get -y upgrade && apt-get -y install sharutils wget vim git mercurial software-properties-common 
+RUN apt-get update && apt-get -y upgrade && apt-get -y install sharutils wget vim git mercurial software-properties-common tmux
 
 # pull BL8 upgrade script from nerc server
 RUN wget -c http://nebc.nerc.ac.uk/downloads/bl8_only/upgrade8.sh
@@ -67,15 +69,19 @@ apt-get -y --force-yes -o "Dir::Etc::Preferences=$HOME/pseudo_orphans.pin" upgra
 apt-get -y --force-yes -o "Dir::Etc::Preferences=$HOME/pseudo_orphans.pin" dist-upgrade
 
 # install bio-linux packages
-#RUN chmod +x $HOME/bl_install_master_list.sh
-#RUN /bin/bash $HOME/bl_install_master_list.sh
+ADD rm_from_package_list.txt $HOME/rm_from_package_list.txt
+RUN for p in `cat rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" bl_master_package_list.txt; done
+RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password password root' \
+&& debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
+RUN chmod +x $HOME/bl_install_master_list.sh
+RUN /bin/bash $HOME/bl_install_master_list.sh
 
 # set default CRAN mirror to 0-Cloud (cran.rstudio.com)
 ADD cran-default-repos.txt $HOME/cran-default-repos.txt
 RUN cat cran-default-repos.txt >> /etc/R/Rprofile.site
 
 # clean up
-RUN rm *.*
+#RUN rm *.*
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # create a biolinux user and add to sudo group
