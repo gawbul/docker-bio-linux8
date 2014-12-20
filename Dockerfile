@@ -71,8 +71,8 @@ apt-get -y --force-yes -o "Dir::Etc::Preferences=$HOME/pseudo_orphans.pin" dist-
 # install bio-linux packages
 ADD rm_from_package_list.txt $HOME/rm_from_package_list.txt
 RUN for p in `cat rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" bl_master_package_list.txt; done
-RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password password root' \
-&& debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
+RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections \
+&& echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
 RUN chmod +x $HOME/bl_install_master_list.sh
 RUN /bin/bash $HOME/bl_install_master_list.sh
 
