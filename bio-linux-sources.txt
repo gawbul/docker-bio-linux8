@@ -1,0 +1,15 @@
+
+## N.B. software from this repository is ENTIRELY UNSUPPORTED by the Ubuntu
+## team, and may not be under a free licence. Please satisfy yourself as to
+## your rights to use the software. Also, please note that software in
+## multiverse WILL NOT receive any review or updates from the Ubuntu
+## security team. 
+deb http://gb.archive.ubuntu.com/ubuntu/ trusty multiverse
+deb-src http://gb.archive.ubuntu.com/ubuntu/ trusty multiverse
+deb http://gb.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+deb-src http://gb.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+
+## This software is not part of Ubuntu, but is offered by third-party
+## developers who want to ship their latest software. 
+deb http://extras.ubuntu.com/ubuntu precise main 
+deb-src http://extras.ubuntu.com/ubuntu precise main

@@ -1,0 +1,4 @@
+# Bio-Linux legacy packages (manually built, there is no deb-src)
+# But there is an alternative mirror you can use.
+# deb http://distro.ibiblio.org/bio-linux/packages/ unstable bio-linux
+deb http://nebc.nerc.ac.uk/bio-linux/ unstable bio-linux

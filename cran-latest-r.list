@@ -1,0 +1,3 @@
+#Latest R-cran packages
+deb http://cran.rstudio.com/bin/linux/ubuntu trusty/
+deb-src http://cran.rstudio.com/bin/linux/ubuntu trusty/
