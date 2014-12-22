@@ -1,4 +1,4 @@
-# Dockerfile to build BioLinux8
+# Dockerfile to build Bio-Linux8
 #
 # VERSION 0.1
 
@@ -29,7 +29,7 @@ RUN echo "Package: xubuntu*\nPin: release *\nPin-Priority: -1" >> /etc/apt/prefe
 RUN echo "Package: xserver*\nPin: release *\nPin-Priority: -1" >> /etc/apt/preferences
 
 # change APT sources.list to pull from GB servers
-# and uncomment some entries
+# uncomment some entries and add some other entries
 RUN sed -i "s/archive.ubuntu.com/gb.archive.ubuntu.com/" /etc/apt/sources.list
 RUN sed -ri "s/^\# (.*trusty-backports.*)/\1 universe multiverse/" /etc/apt/sources.list
 RUN sed -ri "s/^\# (.*trusty-security.*)/\1/" /etc/apt/sources.list
@@ -37,8 +37,8 @@ ADD bio-linux-sources.txt $HOME/bio-linux-sources.txt
 RUN cat $HOME/bio-linux-sources.txt >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 16126D3A3E5C1192
 
-# update the system and install some required packages
-RUN apt-get update && apt-get -y upgrade && apt-get -y install sharutils wget vim git mercurial software-properties-common tmux
+# update the system and install some required/useful packages
+RUN apt-get update && apt-get -y upgrade && apt-get -y install build-essential sharutils wget vim git mercurial software-properties-common tmux
 
 # pull BL8 upgrade script from nerc server
 RUN wget -c http://nebc.nerc.ac.uk/downloads/bl8_only/upgrade8.sh
@@ -46,21 +46,22 @@ RUN wget -c http://nebc.nerc.ac.uk/downloads/bl8_only/upgrade8.sh
 # replace the mktemp step with current working directory
 RUN sed -i 's/mktemp \-d/pwd/' upgrade8.sh
 
-# run script as unpack only
+# run script in unpack mode only
 RUN UNPACK_ONLY=1 sh upgrade8.sh
 
-# install keys
+# install bio-linux repository keys
 RUN dpkg -EGi ./bio-linux-keyring.deb
 
-# add Bio-Linux repositories
+# add Bio-Linux and CRAN-to-DEB repositories
 RUN apt-add-repository -y ppa:nebc/bio-linux && apt-add-repository -y ppa:marutter/c2d4u
 
-# add bio-linux legacy list
+# add bio-linux and rstudio cran legacy lists to apt sources
 ADD bio-linux-legacy.list /etc/apt/sources.list.d/bio-linux-legacy.list
 ADD cran-latest-r.list /etc/apt/sources.list.d/cran-latest-r.list
 RUN apt-get update
 
 # pin some additional packages to ensure they update okay
+# as per Tim's Bio-Linux upgrade script
 RUN orphans=`cat $HOME/pseudo_orphans.txt | egrep -v "^#"` && for p in $orphans ; do for l in "Package: $p" 'Pin: origin ?*' 'Pin-Priority: 1001' '' ; do echo "$l" ; done done > $HOME/pseudo_orphans.pin && echo $orphans | xargs apt-get -y install
 
 # update the system to register new packages
@@ -69,12 +70,13 @@ apt-get -y --force-yes -o "Dir::Etc::Preferences=$HOME/pseudo_orphans.pin" upgra
 apt-get -y --force-yes -o "Dir::Etc::Preferences=$HOME/pseudo_orphans.pin" dist-upgrade
 
 # install bio-linux packages
+ENV DEBIAN_FRONTEND noninteractive
 ADD rm_from_package_list.txt $HOME/rm_from_package_list.txt
-RUN for p in `cat rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" bl_master_package_list.txt; done
+RUN for p in `cat $HOME/rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" $HOME/bl_master_package_list.txt; done
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections \
 && echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
 RUN chmod +x $HOME/bl_install_master_list.sh
-RUN /bin/bash $HOME/bl_install_master_list.sh
+#RUN /bin/bash $HOME/bl_install_master_list.sh
 
 # set default CRAN mirror to 0-Cloud (cran.rstudio.com)
 ADD cran-default-repos.txt $HOME/cran-default-repos.txt
