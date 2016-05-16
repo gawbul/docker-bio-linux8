@@ -77,7 +77,7 @@ RUN for p in `cat $HOME/rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" $HOME/
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections \
 && echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
 RUN chmod +x $HOME/bl_install_master_list.sh
-RUN /bin/bash $HOME/bl_install_master_list.sh
+#RUN /bin/bash $HOME/bl_install_master_list.sh
 
 # set default CRAN mirror to 0-Cloud (cran.rstudio.com)
 ADD cran-default-repos.txt $HOME/cran-default-repos.txt
