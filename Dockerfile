@@ -3,7 +3,7 @@
 # VERSION 0.1
 
 # use ubuntu base image
-FROM ubuntu
+FROM ubuntu:14.04
 
 # maintained by me
 MAINTAINER Steve Moss <gawbul@gmail.com>
@@ -58,6 +58,7 @@ RUN apt-add-repository -y ppa:nebc/bio-linux && apt-add-repository -y ppa:marutt
 # add bio-linux and rstudio cran legacy lists to apt sources
 ADD bio-linux-legacy.list /etc/apt/sources.list.d/bio-linux-legacy.list
 ADD cran-latest-r.list /etc/apt/sources.list.d/cran-latest-r.list
+RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
 RUN apt-get update
 
 # pin some additional packages to ensure they update okay
@@ -76,7 +77,7 @@ RUN for p in `cat $HOME/rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" $HOME/
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections \
 && echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
 RUN chmod +x $HOME/bl_install_master_list.sh
-#RUN /bin/bash $HOME/bl_install_master_list.sh
+RUN /bin/bash $HOME/bl_install_master_list.sh
 
 # set default CRAN mirror to 0-Cloud (cran.rstudio.com)
 ADD cran-default-repos.txt $HOME/cran-default-repos.txt
