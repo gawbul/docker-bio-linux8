@@ -77,6 +77,8 @@ RUN for p in `cat $HOME/rm_from_package_list.txt` ; do sed -ir "/^$p.*/d" $HOME/
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections \
 && echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
 RUN chmod +x $HOME/bl_install_master_list.sh
+# comment this out currently as docker image exceeds 6GB with everything installed
+# and the automated build in the Docker Hub times out while waiting for upload
 #RUN /bin/bash $HOME/bl_install_master_list.sh
 
 # set default CRAN mirror to 0-Cloud (cran.rstudio.com)
@@ -99,3 +101,7 @@ USER biolinux
 # change HOME directory
 ENV HOME /home/biolinux
 WORKDIR $HOME
+
+# create data directory
+RUN mkdir -p $HOME/data
+VOLUME ['/home/biolinux/data']
